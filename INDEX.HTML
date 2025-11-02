@@ -527,9 +527,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     // Función para guardar el estado en localStorage
     const saveState = (answers) => {
@@ -542,33 +539,49 @@
       return saved ? JSON.parse(saved) : null;
     };
 
-    // Preguntas (25) y asignación por categoría
+    // Preguntas (ampliadas) y asignación por categoría.
+    // Cada pregunta puede ponderar varias categorías usando `weights`.
+    // Ejemplo de weights: { 'Ingeniería': 1, 'Arquitectura/Ingeniería': 0.5 }
     const questions = [
-      {q: 'Me interesa entender cómo funcionan las cosas o los mecanismos internos de los aparatos.', cat: 'Ingeniería'},
-      {q: 'Disfruto ayudar a las personas a resolver sus problemas personales o emocionales.', cat: 'Psicología/Social'},
-      {q: 'Me gusta trabajar con números, estadísticas y datos.', cat: 'Matemáticas/Finanzas'},
-      {q: 'Me apasiona dibujar, diseñar o crear cosas visualmente atractivas.', cat: 'Arte/Diseño'},
-      {q: 'Siento curiosidad por cómo funcionan los organismos vivos.', cat: 'Ciencias de la Vida'},
-      {q: 'Me gusta hablar en público y convencer a otras personas de mis ideas.', cat: 'Comunicación/Derecho'},
-      {q: 'Prefiero trabajar al aire libre o en contacto con la naturaleza.', cat: 'Ambiental/Agronomía'},
-      {q: 'Me gustaría crear programas, apps o soluciones tecnológicas.', cat: 'Informática'},
-      {q: 'Me interesa aprender sobre leyes, justicia y derechos.', cat: 'Derecho'},
-      {q: 'Me atrae la idea de dirigir grupos o proyectos.', cat: 'Gestión/Negocios'},
-      {q: 'Me gusta escribir, leer y analizar textos.', cat: 'Humanidades/Letras'},
-      {q: 'Prefiero trabajar en un laboratorio o en investigaciones científicas.', cat: 'Investigación/Ciencias'},
-      {q: 'Me siento cómodo manejando dinero, presupuestos o inversiones.', cat: 'Finanzas/Negocios'},
-      {q: 'Me interesa el cuerpo humano y cómo mantenerlo saludable.', cat: 'Salud/Medicina'},
-      {q: 'Disfruto la música, el teatro o cualquier expresión artística.', cat: 'Arte Escénico/Música'},
-      {q: 'Me gustaría enseñar o transmitir conocimientos a otros.', cat: 'Docencia/Educación'},
-      {q: 'Prefiero seguir procedimientos claros y trabajar con precisión.', cat: 'Técnico/Calidad'},
-      {q: 'Me gusta planear estrategias para alcanzar metas.', cat: 'Estrategia/Gestión'},
-      {q: 'Me interesa comprender el comportamiento humano y social.', cat: 'Sociología/Psicología'},
-      {q: 'Me gustaría diseñar edificios, máquinas o sistemas.', cat: 'Arquitectura/Ingeniería'},
-      {q: 'Prefiero resolver problemas prácticos antes que teóricos.', cat: 'Oficios/Técnico'},
-      {q: 'Me gustaría trabajar en medios de comunicación o redes sociales.', cat: 'Medios/Comunicación'},
-      {q: 'Me atrae investigar el universo, la física o las matemáticas.', cat: 'Física/Matemáticas'},
-      {q: 'Me interesa aprender sobre negocios y emprendimiento.', cat: 'Emprendimiento/Negocios'},
-      {q: 'Me gustaría viajar y conocer otras culturas a través de mi profesión.', cat: 'Turismo/Relaciones Internacionales'}
+      {q: 'Me interesa entender cómo funcionan las cosas o los mecanismos internos de los aparatos.', weights:{'Ingeniería':1,'Arquitectura/Ingeniería':0.4}},
+      {q: 'Disfruto ayudar a las personas a resolver sus problemas personales o emocionales.', weights:{'Psicología/Social':1,'Sociología/Psicología':0.5}},
+      {q: 'Me gusta trabajar con números, estadísticas y datos.', weights:{'Matemáticas/Finanzas':1,'Finanzas/Negocios':0.5,'Física/Matemáticas':0.5}},
+      {q: 'Me apasiona dibujar, diseñar o crear cosas visualmente atractivas.', weights:{'Arte/Diseño':1,'Arquitectura/Ingeniería':0.4}},
+      {q: 'Siento curiosidad por cómo funcionan los organismos vivos.', weights:{'Ciencias de la Vida':1,'Salud/Medicina':0.6}},
+      {q: 'Me gusta hablar en público y convencer a otras personas de mis ideas.', weights:{'Comunicación/Derecho':1,'Medios/Comunicación':0.6}},
+      {q: 'Prefiero trabajar al aire libre o en contacto con la naturaleza.', weights:{'Ambiental/Agronomía':1}},
+      {q: 'Me gustaría crear programas, apps o soluciones tecnológicas.', weights:{'Informática':1,'Ingeniería':0.6}},
+      {q: 'Me interesa aprender sobre leyes, justicia y derechos.', weights:{'Derecho':1,'Comunicación/Derecho':0.4}},
+      {q: 'Me atrae la idea de dirigir grupos o proyectos.', weights:{'Gestión/Negocios':1,'Estrategia/Gestión':0.6}},
+      {q: 'Me gusta escribir, leer y analizar textos.', weights:{'Humanidades/Letras':1,'Docencia/Educación':0.4}},
+      {q: 'Prefiero trabajar en un laboratorio o en investigaciones científicas.', weights:{'Investigación/Ciencias':1,'Física/Matemáticas':0.5}},
+      {q: 'Me siento cómodo manejando dinero, presupuestos o inversiones.', weights:{'Finanzas/Negocios':1,'Emprendimiento/Negocios':0.6}},
+      {q: 'Me interesa el cuerpo humano y cómo mantenerlo saludable.', weights:{'Salud/Medicina':1}},
+      {q: 'Disfruto la música, el teatro o cualquier expresión artística.', weights:{'Arte Escénico/Música':1,'Arte/Diseño':0.4}},
+      {q: 'Me gustaría enseñar o transmitir conocimientos a otros.', weights:{'Docencia/Educación':1}},
+      {q: 'Prefiero seguir procedimientos claros y trabajar con precisión.', weights:{'Técnico/Calidad':1,'Oficios/Técnico':0.6}},
+      {q: 'Me gusta planear estrategias para alcanzar metas.', weights:{'Estrategia/Gestión':1,'Gestión/Negocios':0.6}},
+      {q: 'Me interesa comprender el comportamiento humano y social.', weights:{'Sociología/Psicología':1,'Psicología/Social':0.6}},
+      {q: 'Me gustaría diseñar edificios, máquinas o sistemas.', weights:{'Arquitectura/Ingeniería':1,'Ingeniería':0.5}},
+      {q: 'Prefiero resolver problemas prácticos antes que teóricos.', weights:{'Oficios/Técnico':1,'Técnico/Calidad':0.5}},
+      {q: 'Me gustaría trabajar en medios de comunicación o redes sociales.', weights:{'Medios/Comunicación':1,'Comunicación/Derecho':0.5}},
+      {q: 'Me atrae investigar el universo, la física o las matemáticas.', weights:{'Física/Matemáticas':1,'Investigación/Ciencias':0.5}},
+      {q: 'Me interesa aprender sobre negocios y emprendimiento.', weights:{'Emprendimiento/Negocios':1,'Gestión/Negocios':0.5}},
+      {q: 'Me gustaría viajar y conocer otras culturas a través de mi profesión.', weights:{'Turismo/Relaciones Internacionales':1}},
+      // Preguntas adicionales para mejorar precisión
+      {q: 'Disfruto analizar datos y buscar patrones en grandes conjuntos de información.', weights:{'Matemáticas/Finanzas':0.8,'Informática':0.6,'Física/Matemáticas':0.6}},
+      {q: 'Me interesa diseñar productos o experiencias pensando en el usuario.', weights:{'Arte/Diseño':0.8,'Arquitectura/Ingeniería':0.5}},
+      {q: 'Me siento motivado por resolver problemas técnicos complejos.', weights:{'Ingeniería':0.9,'Investigación/Ciencias':0.5}},
+      {q: 'Me gusta coordinar equipos y gestionar recursos para cumplir objetivos.', weights:{'Gestión/Negocios':0.9,'Estrategia/Gestión':0.7}},
+      {q: 'Disfruto trabajar con herramientas manuales y reparaciones prácticas.', weights:{'Oficios/Técnico':0.9,'Técnico/Calidad':0.5}},
+      {q: 'Me interesa la investigación aplicada y el desarrollo de nuevas soluciones.', weights:{'Investigación/Ciencias':0.9,'Ingeniería':0.6}},
+      {q: 'Me gusta crear contenidos audiovisuales y contar historias en video.', weights:{'Medios/Comunicación':0.9,'Arte/Diseño':0.4}},
+      {q: 'Tengo interés por la economía, mercados y el comportamiento empresarial.', weights:{'Finanzas/Negocios':0.9,'Emprendimiento/Negocios':0.6}},
+      {q: 'Me gusta cuidar y ayudar a otros en una labor sanitaria o asistencial.', weights:{'Salud/Medicina':0.9,'Docencia/Educación':0.3}},
+      {q: 'Me apasiona experimentar con técnicas artísticas y nuevas formas de expresión.', weights:{'Arte/Diseño':0.9,'Arte Escénico/Música':0.5}},
+      {q: 'Disfruto planear, organizar eventos o coordinar actividades prácticas.', weights:{'Gestión/Negocios':0.8,'Turismo/Relaciones Internacionales':0.5}},
+      {q: 'Me interesa la sostenibilidad, ecología y la conservación del entorno.', weights:{'Ambiental/Agronomía':0.9}},
+      {q: 'Me atrae el trabajo en investigación teórica y resolución de problemas abstractos.', weights:{'Física/Matemáticas':0.9,'Investigación/Ciencias':0.6}}
     ];
 
     const form = document.getElementById('testForm');
@@ -590,29 +603,7 @@
       console.error('Formulario no encontrado');
     }
 
-    // Función para mostrar una pregunta específica
-    const showQuestion = (index) => {
-      const questionElements = document.querySelectorAll('#testForm .q');
-      if (questionElements.length === 0) {
-        console.error('No se encontraron preguntas');
-        return;
-      }
-
-      // Validar el índice
-      if (index < 0) index = 0;
-      if (index >= questionElements.length) index = questionElements.length - 1;
-
-      // Ocultar todas las preguntas
-      questionElements.forEach(q => q.style.display = 'none');
-
-      // Mostrar la pregunta actual
-      questionElements[index].style.display = 'grid';
-      currentQuestion = index;
-
-      // Actualizar botones de navegación
-      if (prevBtn) prevBtn.style.display = index > 0 ? 'inline-flex' : 'none';
-      if (nextBtn) nextBtn.style.display = index < questionElements.length - 1 ? 'inline-flex' : 'none';
-    };
+    
 
     // Datos de compatibilidad para recomendaciones más precisas
     const careerCompatibility = {
@@ -684,9 +675,8 @@
       });
     };
 
-    // Generar preguntas en el DOM
-    const form = document.getElementById('testForm');
-    form.innerHTML = ''; // Limpiar el formulario primero
+  // Generar preguntas en el DOM
+  form.innerHTML = ''; // Limpiar el formulario primero
     
     questions.forEach((it, i) => {
       const idx = i+1;
@@ -826,20 +816,36 @@
         return;
       }
 
-      // Sumar puntajes por categoría
+      // Sumar puntajes por categoría (uso de weights para mayor precisión)
       const scores = {};
+      const maxScores = {}; // máximo posible por categoría (para normalizar)
+
       questions.forEach((q,i)=>{
         const ans = answers[i];
         const pts = valueMap[ans] || 0;
-        const cat = q.cat;
-        scores[cat] = (scores[cat] || 0) + pts;
+
+        if(q.weights){
+          Object.entries(q.weights).forEach(([cat, w])=>{
+            scores[cat] = (scores[cat] || 0) + pts * w;
+            maxScores[cat] = (maxScores[cat] || 0) + 4 * w; // 4 es el valor máximo por respuesta (A)
+          });
+        } else if(q.cat){
+          const cat = q.cat;
+          scores[cat] = (scores[cat] || 0) + pts;
+          maxScores[cat] = (maxScores[cat] || 0) + 4;
+        }
       });
 
-      // Ordenar categorías por puntaje
-      const sorted = Object.keys(scores).map(k=>({cat:k,score:scores[k]})).sort((a,b)=>b.score-a.score);
+      // Calcular compatibilidades normalizadas (%) por categoría
+      const compat = {};
+      Object.keys(scores).forEach(cat => {
+        const raw = scores[cat] || 0;
+        const max = maxScores[cat] || 1;
+        compat[cat] = Math.round((raw / max) * 100);
+      });
 
-      // Calcular compatibilidad detallada
-      const compatibility = calculateCompatibility(scores);
+      // Ordenar por compatibilidad descendente
+      const sorted = Object.keys(compat).map(k=>({cat:k, score: Math.round(scores[k]||0), compat: compat[k]})).sort((a,b)=>b.compat - a.compat);
       const top3 = sorted.slice(0,3);
       
       // Calcular estadísticas adicionales
@@ -878,10 +884,10 @@
       
       html += '<h4><i class="fas fa-star" style="color:var(--accent);margin-right:8px"></i>Áreas Recomendadas</h4>';
       html += '<div class="recommendations" style="margin:20px 0">' + 
-        top3.map(t => {
+          top3.map(t => {
           const careerData = careerCompatibility[t.cat] || {};
           const recs = recommendations[t.cat] ? recommendations[t.cat].slice(0,3).join(', ') : 'Carreras similares';
-          const compatibility = Math.round((t.score / maxPoints) * 100);
+          const compatibility = t.compat || Math.round((t.score / maxPoints) * 100);
           
           return `
             <div style="background:rgba(255,255,255,0.02);border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.05)">
@@ -941,7 +947,7 @@
             <p>Tu área principal es <strong>${best.cat}</strong>. Te recomendamos:</p>
             <ul style="margin:10px 0;padding-left:20px">
               <li>Investiga más sobre las carreras recomendadas</li>
-              <li>Toma cursos introductorios en plataformas como Coursera o edX</li>
+              <li>Toma cursos introductorios en plataformas</li>
               <li>Contacta con profesionales o estudiantes del área</li>
               <li>Participa en talleres o eventos relacionados</li>
             </ul>
@@ -949,331 +955,7 @@
         `;
       }
 
-      html += '<div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05);text-align:center">' +
-        '<button id="downloadPDF" class="secondary" style="margin:10px auto">' +
-        '<i class="fas fa-file-pdf"></i> Descargar Reporte PDF' +
-        '</button>' +
-        '<p style="color:var(--muted);font-size:14px;margin-top:10px">' +
-        '<i class="fas fa-info-circle"></i> ' +
-        'Incluye análisis detallado, recomendaciones y plan de acción' +
-        '</p>' +
-        '</div>';
-
-      // Generar PDF cuando se hace clic en el botón
-      setTimeout(() => {
-        document.getElementById('downloadPDF').addEventListener('click', async () => {
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF();
-          
-          // Mostrar indicador de carga
-          const loadingDiv = document.createElement('div');
-          loadingDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,25,47,0.9);display:flex;align-items:center;justify-content:center;z-index:1000';
-          
-          const loadingContent = document.createElement('div');
-          loadingContent.style.textAlign = 'center';
-          
-          const spinner = document.createElement('i');
-          spinner.className = 'fas fa-spinner fa-spin';
-          spinner.style.cssText = 'font-size:40px;color:var(--accent)';
-          
-          const text = document.createElement('p');
-          text.style.marginTop = '10px';
-          text.textContent = 'Generando PDF...';
-          
-          loadingContent.appendChild(spinner);
-          loadingContent.appendChild(text);
-          loadingDiv.appendChild(loadingContent);
-          document.body.appendChild(loadingDiv);
-
-          try {
-            // Configurar el PDF
-            pdf.setFontSize(20);
-            pdf.setTextColor(100, 255, 218);
-            pdf.text('Test Vocacional Profesional', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            
-            // Fecha y datos básicos
-            const fecha = new Date().toLocaleDateString('es-ES');
-            pdf.text('Fecha: ' + fecha, 20, 30);
-            
-            // Agregar estadísticas
-            pdf.text('Estadísticas de tu perfil:', 20, 45);
-            pdf.text('• Puntos máximos: ' + maxPoints, 25, 55);
-            pdf.text('• Promedio: ' + avgPoints, 25, 62);
-            pdf.text('• Áreas dominantes: ' + dominantAreas, 25, 69);
-            
-            // Agregar top 3 de áreas
-            pdf.text('Tus áreas más compatibles:', 20, 85);
-            top3.forEach((area, i) => {
-              const y = 95 + (i * 25);
-              const compatibility = Math.round((area.score / maxPoints) * 100);
-              
-              pdf.setFontSize(14);
-              pdf.setTextColor(0, 150, 136);
-              pdf.text((i + 1) + '. ' + area.cat, 25, y);
-              
-              pdf.setFontSize(12);
-              pdf.setTextColor(0);
-              pdf.text('Compatibilidad: ' + compatibility + '%', 30, y + 7);
-              pdf.text('Carreras recomendadas: ' + recommendations[area.cat].join(', '), 30, y + 14);
-            });
-            
-            // Agregar consejos personalizados
-            pdf.addPage();
-            pdf.setFontSize(16);
-            pdf.setTextColor(0, 150, 136);
-            pdf.text('Plan de Acción Recomendado', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            const consejos = [
-              'Investiga en profundidad cada carrera recomendada',
-              'Contacta con profesionales del área',
-              'Realiza cursos introductorios online',
-              'Participa en eventos y ferias universitarias',
-              'Busca prácticas o voluntariados relacionados',
-              'Únete a grupos o comunidades del área'
-            ];
-            
-            consejos.forEach((consejo, i) => {
-              pdf.text('• ' + consejo, 25, 35 + (i * 10));
-            });
-            
-            // Agregar recursos adicionales
-            pdf.text('Recursos adicionales:', 20, 100);
-            pdf.text('• Plataformas de cursos: Coursera, edX, Udemy', 25, 110);
-            pdf.text('• Redes profesionales: LinkedIn, Indeed', 25, 120);
-            pdf.text('• Comunidades: Meetup, Grupos profesionales', 25, 130);
-            
-            // Agregar gráfico
-            const canvas = document.getElementById('resultsChart');
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addPage();
-            pdf.text('Gráfico de Aptitudes', 20, 20);
-            pdf.addImage(imgData, 'PNG', 15, 30, 180, 150);
-            
-            // Guardar el PDF
-            pdf.save('Test-Vocacional-Resultados.pdf');
-          } catch (error) {
-            console.error('Error al generar el PDF:', error);
-            alert('Hubo un error al generar el PDF. Por favor, intenta de nuevo.');
-          } finally {
-            // Eliminar el indicador de carga
-            document.body.removeChild(loadingDiv);
-          }
-        });
-      }, 1000);
-
-      // Generar PDF cuando se hace clic en el botón
-      setTimeout(() => {
-        document.getElementById('downloadPDF').addEventListener('click', async () => {
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF();
-          
-          // Mostrar indicador de carga
-          const loadingDiv = document.createElement('div');
-          loadingDiv.style.position = 'fixed';
-          loadingDiv.style.top = '0';
-          loadingDiv.style.left = '0';
-          loadingDiv.style.right = '0';
-          loadingDiv.style.bottom = '0';
-          loadingDiv.style.background = 'rgba(10,25,47,0.9)';
-          loadingDiv.style.display = 'flex';
-          loadingDiv.style.alignItems = 'center';
-          loadingDiv.style.justifyContent = 'center';
-          loadingDiv.style.zIndex = '1000';
-
-          loadingDiv.innerHTML = \`
-            <div style="text-align:center">
-              <i class="fas fa-spinner fa-spin" style="font-size:40px;color:var(--accent)"></i>
-              <p style="margin-top:10px">Generando PDF...</p>
-            </div>
-          \`;
-          document.body.appendChild(loadingDiv);
-
-          try {
-            // Configurar el PDF
-            pdf.setFontSize(20);
-            pdf.setTextColor(100, 255, 218);
-            pdf.text('Test Vocacional Profesional', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            
-            // Fecha y datos básicos
-            const fecha = new Date().toLocaleDateString('es-ES');
-            pdf.text('Fecha: ' + fecha, 20, 30);
-            
-            // Agregar estadísticas
-            pdf.text('Estadísticas de tu perfil:', 20, 45);
-            pdf.text('• Puntos máximos: ' + maxPoints, 25, 55);
-            pdf.text('• Promedio: ' + avgPoints, 25, 62);
-            pdf.text('• Áreas dominantes: ' + dominantAreas, 25, 69);
-            
-            // Agregar top 3 de áreas
-            pdf.text('Tus áreas más compatibles:', 20, 85);
-            top3.forEach((area, i) => {
-              const y = 95 + (i * 25);
-              const compatibility = Math.round((area.score / maxPoints) * 100);
-              
-              pdf.setFontSize(14);
-              pdf.setTextColor(0, 150, 136);
-              pdf.text((i + 1) + '. ' + area.cat, 25, y);
-              
-              pdf.setFontSize(12);
-              pdf.setTextColor(0);
-              pdf.text('Compatibilidad: ' + compatibility + '%', 30, y + 7);
-              pdf.text('Carreras recomendadas: ' + recommendations[area.cat].join(', '), 30, y + 14);
-            });
-            
-            // Agregar consejos personalizados
-            pdf.addPage();
-            pdf.setFontSize(16);
-            pdf.setTextColor(0, 150, 136);
-            pdf.text('Plan de Acción Recomendado', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            const consejos = [
-              'Investiga en profundidad cada carrera recomendada',
-              'Contacta con profesionales del área',
-              'Realiza cursos introductorios online',
-              'Participa en eventos y ferias universitarias',
-              'Busca prácticas o voluntariados relacionados',
-              'Únete a grupos o comunidades del área'
-            ];
-            
-            consejos.forEach((consejo, i) => {
-              pdf.text('• ' + consejo, 25, 35 + (i * 10));
-            });
-            
-            // Agregar recursos adicionales
-            pdf.text('Recursos adicionales:', 20, 100);
-            pdf.text('• Plataformas de cursos: Coursera, edX, Udemy', 25, 110);
-            pdf.text('• Redes profesionales: LinkedIn, Indeed', 25, 120);
-            pdf.text('• Comunidades: Meetup, Grupos profesionales', 25, 130);
-            
-            // Agregar gráfico
-            const canvas = document.getElementById('resultsChart');
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addPage();
-            pdf.text('Gráfico de Aptitudes', 20, 20);
-            pdf.addImage(imgData, 'PNG', 15, 30, 180, 150);
-            
-            // Guardar el PDF
-            pdf.save('Test-Vocacional-Resultados.pdf');
-          } catch (error) {
-            console.error('Error al generar el PDF:', error);
-            alert('Hubo un error al generar el PDF. Por favor, intenta de nuevo.');
-          } finally {
-            // Eliminar el indicador de carga
-            document.body.removeChild(loadingDiv);
-          }
-        });
-      }, 1000);
-
-      // Generar PDF cuando se hace clic en el botón
-      setTimeout(() => {
-        document.getElementById('downloadPDF').addEventListener('click', async () => {
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF();
-          const resultDiv = document.getElementById('result');
-          
-          // Mostrar indicador de carga
-          const loadingDiv = document.createElement('div');
-          loadingDiv.innerHTML = `
-            <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,25,47,0.9);
-                        display:flex;align-items:center;justify-content:center;z-index:1000">
-              <div style="text-align:center">
-                <i class="fas fa-spinner fa-spin" style="font-size:40px;color:var(--accent)"></i>
-                <p style="margin-top:10px">Generando PDF...</p>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(loadingDiv);
-
-          try {
-            // Configurar el PDF
-            pdf.setFontSize(20);
-            pdf.setTextColor(100, 255, 218);
-            pdf.text('Test Vocacional Profesional', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            
-            // Fecha y datos básicos
-            const fecha = new Date().toLocaleDateString('es-ES');
-            pdf.text(\`Fecha: \${fecha}\`, 20, 30);
-            
-            // Agregar estadísticas
-            pdf.text('Estadísticas de tu perfil:', 20, 45);
-            pdf.text(\`• Puntos máximos: \${maxPoints}\`, 25, 55);
-            pdf.text(\`• Promedio: \${avgPoints}\`, 25, 62);
-            pdf.text(\`• Áreas dominantes: \${dominantAreas}\`, 25, 69);
-            
-            // Agregar top 3 de áreas
-            pdf.text('Tus áreas más compatibles:', 20, 85);
-            top3.forEach((area, i) => {
-              const y = 95 + (i * 25);
-              const compatibility = Math.round((area.score / maxPoints) * 100);
-              
-              pdf.setFontSize(14);
-              pdf.setTextColor(0, 150, 136);
-              pdf.text(\`\${i + 1}. \${area.cat}\`, 25, y);
-              
-              pdf.setFontSize(12);
-              pdf.setTextColor(0);
-              pdf.text(\`Compatibilidad: \${compatibility}%\`, 30, y + 7);
-              pdf.text(\`Carreras recomendadas: \${recommendations[area.cat].join(', ')}\`, 30, y + 14);
-            });
-            
-            // Agregar consejos personalizados
-            pdf.addPage();
-            pdf.setFontSize(16);
-            pdf.setTextColor(0, 150, 136);
-            pdf.text('Plan de Acción Recomendado', 20, 20);
-            
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            const consejos = [
-              'Investiga en profundidad cada carrera recomendada',
-              'Contacta con profesionales del área',
-              'Realiza cursos introductorios online',
-              'Participa en eventos y ferias universitarias',
-              'Busca prácticas o voluntariados relacionados',
-              'Únete a grupos o comunidades del área'
-            ];
-            
-            consejos.forEach((consejo, i) => {
-              pdf.text(\`• \${consejo}\`, 25, 35 + (i * 10));
-            });
-            
-            // Agregar recursos adicionales
-            pdf.text('Recursos adicionales:', 20, 100);
-            pdf.text('• Plataformas de cursos: Coursera, edX, Udemy', 25, 110);
-            pdf.text('• Redes profesionales: LinkedIn, Indeed', 25, 120);
-            pdf.text('• Comunidades: Meetup, Grupos profesionales', 25, 130);
-            
-            // Agregar gráfico
-            const canvas = document.getElementById('resultsChart');
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addPage();
-            pdf.text('Gráfico de Aptitudes', 20, 20);
-            pdf.addImage(imgData, 'PNG', 15, 30, 180, 150);
-            
-            // Guardar el PDF
-            pdf.save('Test-Vocacional-Resultados.pdf');
-          } catch (error) {
-            console.error('Error al generar el PDF:', error);
-            alert('Hubo un error al generar el PDF. Por favor, intenta de nuevo.');
-          } finally {
-            // Eliminar el indicador de carga
-            document.body.removeChild(loadingDiv);
-          }
-        });
-      }, 1000);
+      
 
       const r = document.getElementById('result');
       r.style.display='block';
