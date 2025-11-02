@@ -263,6 +263,15 @@
       border-color: var(--accent);
     }
 
+    /* Estilo para botones deshabilitados */
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
     .result {
       margin-top: 25px;
       padding: 25px;
@@ -583,11 +592,12 @@
       {q: 'Me atrae el trabajo en investigación teórica y resolución de problemas abstractos.', weights:{'Física/Matemáticas':0.9,'Investigación/Ciencias':0.6}}
     ];
 
-    const form = document.getElementById('testForm');
-    const progressBar = document.getElementById('progress');
-    const progressText = document.getElementById('progress-text');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+  const form = document.getElementById('testForm');
+  const progressBar = document.getElementById('progress');
+  const progressText = document.getElementById('progress-text');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
     
     let currentQuestion = 0;
     const savedState = loadState();
@@ -642,6 +652,9 @@
       progressText.textContent = `${answered} de ${total}`;
       document.getElementById('progress-percent').textContent = Math.round(percent) + '%';
       
+      // Bloquear/activar botón de resultado según respuestas
+      if (submitBtn) submitBtn.disabled = (answered < total);
+
       // Efecto visual según el progreso
       if (percent === 100) {
         progressBar.style.animation = 'glow 2s ease-in-out infinite';
@@ -656,15 +669,19 @@
       questionElements.forEach((q, i) => {
         q.style.display = i === index ? 'grid' : 'none';
       });
-      
+
+      // Normalizar índice
+      if (index < 0) index = 0;
+      if (index >= questions.length) index = questions.length - 1;
+
       if(questionElements[index]) {
         currentQuestion = index;
-        
-        // Actualizar botones de navegación
+
+        // Actualizar botones de navegación basados en el total lógico de preguntas
         prevBtn.style.display = index > 0 ? 'inline-flex' : 'none';
-        nextBtn.style.display = index < questionElements.length - 1 ? 'inline-flex' : 'none';
+        nextBtn.style.display = index < (questions.length - 1) ? 'inline-flex' : 'none';
       }
-      
+
       // Asegurar que los botones de navegación son visibles
       document.querySelectorAll('.nav-buttons button').forEach(btn => {
         if(btn.style.display === 'inline-flex') {
@@ -739,8 +756,8 @@
 
     if(nextBtn) {
       nextBtn.addEventListener('click', () => {
-        const totalQuestions = document.querySelectorAll('#testForm .q').length;
-        if (currentQuestion < totalQuestions - 1) {
+        // Usar el número lógico de preguntas (questions.length) en lugar de contar el DOM
+        if (currentQuestion < questions.length - 1) {
           showQuestion(currentQuestion + 1);
           nextBtn.blur(); // Quitar el foco del botón después de hacer clic
         }
@@ -749,6 +766,12 @@
 
     // Inicializar mostrando la primera pregunta
     window.addEventListener('load', () => {
+      // Actualizar texto del header y progreso para reflejar el número real de preguntas
+      const headerCount = document.querySelector('header .card strong');
+      if (headerCount) headerCount.textContent = `${questions.length} Preguntas Especializadas`;
+      const progressTextEl = document.getElementById('progress-text');
+      if (progressTextEl) progressTextEl.textContent = `0 de ${questions.length}`;
+
       showQuestion(0);
     });
 
